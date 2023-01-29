@@ -7,41 +7,43 @@
 #include "ABMyCharacter.generated.h"
 
 DECLARE_DELEGATE_OneParam(FOnRun, bool);
-DECLARE_DELEGATE_OneParam(FOnCanVault, bool);
+DECLARE_DELEGATE_OneParam(FOnCanLowThinVault, bool);
+DECLARE_DELEGATE_OneParam(FOnCanLowThickVault, bool);
 
 
 UCLASS()
 class DW_API AABMyCharacter : public ACharacter
 {
 	GENERATED_BODY()
-	
+
 public:
 	enum class ControlMode
 	{
 		GTA,
 		DAIBLO,
-	}; 
+	};
+
+	struct VecInfo
+	{
+		float X;
+		float Y;
+		float Z;
+	};
 
 public:
 	AABMyCharacter();
 
 public:
-	FOnRun		RunEvent;
-	FOnCanVault VaultEvent;
+	FOnRun				RunEvent;
+	FOnCanLowThinVault	LowThinVaultEvent;
+	FOnCanLowThickVault	LowThickVaultEvent;
 
 protected:
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-public:
-	UFUNCTION()
-	void CheckCanVault();
-	bool CheckThickness();
-	FVector EndLocation = FVector::ZeroVector;
-	bool Vaulting = false;
 
 public:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
@@ -74,6 +76,21 @@ public:
 	void LookUp(float NewAxisValue);
 	void Turn(float NewAxisValue);
 
+public:
+	UFUNCTION()
+	void	CheckCanLowVault();
+	void	LowThinVault(float DeltaTime);
+	void	LowThickVault(float DeltaTime);
+	FVector CheckWallHeight();
+	bool	CheckWallThickness();
+	bool	CheckMinMax(float Min, float Max, float Value)
+	{
+		if (Value <= Max && Value >= Min) return true;
+		return false;
+	}
+	bool	LowThinVaulting = false;
+	bool	LowThickVaulting = false;
+
 protected:
 	void SetControlMode(ControlMode ControlMode);
 
@@ -87,5 +104,9 @@ private:
 	float		ArmRotationSpeed = 0.0f;
 
 	bool		IsRunning = false;
-	
+
+	float		LowThinVaultSpeed = 100.f;
+	float		LowThickVaultSpeed = 70.f;
+
+	FVector		LowThickVaultDestPos = FVector::ZeroVector;
 };

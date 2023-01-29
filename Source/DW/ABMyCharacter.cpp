@@ -50,11 +50,14 @@ void AABMyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (Vaulting)
+	if (LowThinVaulting)
 	{
-		FVector pos = GetActorLocation();
-		pos += EndLocation * 200.f * DeltaTime;
-		SetActorLocation(pos);
+		LowThinVault(DeltaTime);
+		return;
+	}
+	else if (LowThickVaulting)
+	{
+		LowThickVault(DeltaTime);
 		return;
 	}
 
@@ -98,19 +101,18 @@ void AABMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAxis(TEXT("LookUp"), this, &AABMyCharacter::LookUp);
 	PlayerInputComponent->BindAxis(TEXT("Turn"), this, &AABMyCharacter::Turn);
 
-
 	PlayerInputComponent->BindAction(TEXT("ViewChange"), EInputEvent::IE_Pressed, this, &AABMyCharacter::ViewChange); 
 	PlayerInputComponent->BindAction(TEXT("Jump"), EInputEvent::IE_Pressed, this, &AABMyCharacter::Jump); PlayerInputComponent->BindAction(TEXT("Run"), EInputEvent::IE_Pressed, this, &AABMyCharacter::PressedRun);
 	PlayerInputComponent->BindAction(TEXT("Run"), EInputEvent::IE_Released, this, &AABMyCharacter::ReleasedRun);
 }
 
-void AABMyCharacter::CheckCanVault()
+void AABMyCharacter::CheckCanLowVault()
 {
 	FHitResult HitResult;
 	FCollisionQueryParams Params(NAME_None, false, this);
 	Params.AddIgnoredActor(this);
 
-	float CheckRange = 50.f;
+	float CheckRange = 40.f;
 
 	FVector Start = GetActorLocation() - FVector(0.f, 0.f, 25.f);
 	FVector End = Start + GetActorForwardVector() * CheckRange;
@@ -135,78 +137,70 @@ void AABMyCharacter::CheckCanVault()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Trace hit actor: %s"), *HitResult.GetActor()->GetName());
 	}
-	// #########################################
-
-	FHitResult HitResultHead;
-	FCollisionQueryParams Params2(NAME_None, false, this);
-	Params2.AddIgnoredActor(this);
-	FVector StartHead = GetActorLocation() + FVector(0.f, 0.f, 40.f);
-	FVector EndHead = StartHead + GetActorForwardVector() * CheckRange;
-	bool bResultHead = GetWorld()->LineTraceSingleByChannel
-	(
-		OUT HitResultHead,
-		StartHead, EndHead,
-		ECollisionChannel::ECC_GameTraceChannel1,
-		Params2
-	);
-	FColor DrawColorHead;
-	if (bResultHead)
-		DrawColorHead = FColor::Green;
-	else
-		DrawColorHead = FColor::Red;
-
-	DrawDebugLine(GetWorld(), StartHead, EndHead, DrawColorHead, false, 1.f, 10, 1.f);
-
-
+	float MinHeight = HitResult.Location.Z;
+	float MaxHeight = HitResult.Location.Z + 20.f;
+	
 	// 물체의 높이가 낮은 경우
-	if (bResult && bResultHead == false)
+	if (bResult)
 	{
-		if (CheckThickness())
+		FVector WallHeightInfo = CheckWallHeight();
+		if (WallHeightInfo != FVector::ZeroVector && CheckMinMax(MinHeight, MaxHeight, WallHeightInfo.Z))
 		{
-			// 물체의 두깨가 두꺼운 경우
-			VaultEvent.ExecuteIfBound(true);
-			Vaulting = true;
-			ABLOG_S(Warning);
-			CapsuleComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			CharacterMovementComp->SetMovementMode(EMovementMode::MOVE_Flying);
-			ABLOG(Warning, TEXT("Location : %s"), *HitResult.Location.ToString());
-			ABLOG(Warning, TEXT("Normal : %s"), *HitResult.Normal.ToString());
-			APlayerController* Playercontroller = GetWorld()->GetFirstPlayerController();
-			DisableInput(Playercontroller);
-		}
-		else
-		{
-			// 물체의 두깨가 얇은 경우
-			//VaultEvent.ExecuteIfBound(false);
-			//ABLOG_S(Warning);
-		}
-	}
-	// 물체의 높이가 높은 경우
-	else if (bResult && bResultHead)
-	{
-		if (CheckThickness())
-		{
-			// 두꺼운 경우
+			// 물체의 높이가 낮고 두꺼운 경우
+			if (CheckWallThickness())
+			{
+				ABLOG(Warning, TEXT("Low and Thick"));
+				LowThickVaultEvent.ExecuteIfBound(true);
+				LowThickVaulting = true;
+				CapsuleComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+				CharacterMovementComp->SetMovementMode(EMovementMode::MOVE_Flying);
+				APlayerController* Playercontroller = GetWorld()->GetFirstPlayerController();
+				DisableInput(Playercontroller);
 
+				// FRotationMatrix::MakeFromX(HitResult.Location);
+				LowThickVaultDestPos = WallHeightInfo - HitResult.Location;
+				LowThickVaultDestPos.Normalize();
+			}
+			// 물체의 높이가 낮고 얇은 경우
+			else
+			{
+				ABLOG(Warning, TEXT("Low and Thin"));
+				LowThinVaultEvent.ExecuteIfBound(true);
+				LowThinVaulting = true;
+				CapsuleComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+				CharacterMovementComp->SetMovementMode(EMovementMode::MOVE_Flying);
+				APlayerController* Playercontroller = GetWorld()->GetFirstPlayerController();
+				DisableInput(Playercontroller);
+			}
 		}
 		else
 		{
-			// 얇은 경우
+			ABLOG(Warning, TEXT("Can't Low Vault!"))
 		}
-	}
-	// 물체의 높이가 높은데 곰ㅇ중에 떠있는 경우
-	else if (bResultHead)
-	{
-		
 	}
 }
 
-bool AABMyCharacter::CheckThickness()
+void AABMyCharacter::LowThinVault(float DeltaTime)
+{
+	FVector pos = GetActorLocation();
+	pos += GetActorForwardVector() * LowThinVaultSpeed * DeltaTime;
+	SetActorLocation(pos);
+}
+
+void AABMyCharacter::LowThickVault(float DeltaTime)
+{
+	FVector pos = GetActorLocation();
+	pos += LowThickVaultDestPos * LowThickVaultSpeed * DeltaTime;
+	// pos += GetActorUpVector() * LowThickVaultSpeed * DeltaTime;
+	SetActorLocation(pos);
+}
+
+FVector AABMyCharacter::CheckWallHeight()
 {
 	FHitResult HitResult;
 	FCollisionQueryParams Params(NAME_None, false, this);
 	Params.AddIgnoredActor(this);
-	float CheckRange = 130.f;
+	float CheckRange = 60.f;
 
 	FVector Start = GetActorLocation() + GetActorForwardVector() * CheckRange;
 	Start.Z += CapsuleComp->GetScaledCapsuleHalfHeight();
@@ -228,14 +222,44 @@ bool AABMyCharacter::CheckThickness()
 
 	DrawDebugLine(GetWorld(), Start, End, DrawColor, false, 1.f, 10, 1.f);
 
-	ABLOG(Warning, TEXT("%s"), bResult ? TEXT("Thick!") : TEXT("Thin!"));
 	if (bResult)
 	{
-		EndLocation = HitResult.Location;
-		EndLocation = EndLocation.GetSafeNormal();
+		FVector info{ HitResult.Location.X, HitResult.Location.Y, HitResult.Location.Z };
+		return info;
 	}
+	else return FVector::ZeroVector;
+}
+
+bool AABMyCharacter::CheckWallThickness()
+{
+	FHitResult HitResult;
+	FCollisionQueryParams Params(NAME_None, false, this);
+	Params.AddIgnoredActor(this);
+	float CheckRange = 90.f;
+
+	FVector Start = GetActorLocation() + GetActorForwardVector() * CheckRange;
+	Start.Z += CapsuleComp->GetScaledCapsuleHalfHeight();
+	FVector End = GetActorLocation() + GetActorForwardVector() * CheckRange;
+	End.Z -= CapsuleComp->GetScaledCapsuleHalfHeight();
+
+	bool bResult = GetWorld()->LineTraceSingleByChannel
+	(
+		OUT HitResult,
+		Start, End,
+		ECollisionChannel::ECC_GameTraceChannel1,
+		Params
+	);
+	FColor DrawColor;
+	if (bResult)
+		DrawColor = FColor::Green;
+	else
+		DrawColor = FColor::Red;
+
+	DrawDebugLine(GetWorld(), Start, End, DrawColor, false, 1.f, 10, 1.f);
+
 	return bResult;
 }
+
 
 void AABMyCharacter::ViewChange()
 {
@@ -258,7 +282,7 @@ void AABMyCharacter::ViewChange()
 
 void AABMyCharacter::Jump()
 {
-	CheckCanVault();
+	CheckCanLowVault();
 }
 
 void AABMyCharacter::PressedRun()
