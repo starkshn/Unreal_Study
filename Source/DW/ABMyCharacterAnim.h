@@ -23,9 +23,9 @@ public:
 
 public:
 	UFUNCTION()
-	void AnimNotify_EndLowThinVault();
-	UFUNCTION()
-	void AnimNotify_EndLowThickVault();
+	void AnimNotify_EndHighVault();
+//	UFUNCTION()
+//	void AnimNotify_EndLowThickVault();
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintreadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
@@ -38,11 +38,8 @@ private:
 	bool IsRunning;
 
 	UPROPERTY(EditAnywhere, BlueprintreadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
-	bool CanLowThinVault;
+	bool IsVaultingHigh;
 
-	UPROPERTY(EditAnywhere, BlueprintreadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
-	bool CanLowThickVault;
-	
 
 private:
 	class AABMyCharacter* MyCharacater;

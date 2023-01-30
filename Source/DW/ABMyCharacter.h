@@ -7,9 +7,7 @@
 #include "ABMyCharacter.generated.h"
 
 DECLARE_DELEGATE_OneParam(FOnRun, bool);
-DECLARE_DELEGATE_OneParam(FOnCanLowThinVault, bool);
-DECLARE_DELEGATE_OneParam(FOnCanLowThickVault, bool);
-
+DECLARE_DELEGATE_OneParam(FOnVaultHigh, bool);
 
 UCLASS()
 class DW_API AABMyCharacter : public ACharacter
@@ -23,20 +21,12 @@ public:
 		DAIBLO,
 	};
 
-	struct VecInfo
-	{
-		float X;
-		float Y;
-		float Z;
-	};
-
 public:
 	AABMyCharacter();
 
 public:
 	FOnRun				RunEvent;
-	FOnCanLowThinVault	LowThinVaultEvent;
-	FOnCanLowThickVault	LowThickVaultEvent;
+	FOnVaultHigh		VaultHighEvent;
 
 protected:
 	virtual void BeginPlay() override;
@@ -77,22 +67,25 @@ public:
 	void Turn(float NewAxisValue);
 
 public:
-	UFUNCTION()
-	void	CheckCanLowVault();
-	void	LowThinVault(float DeltaTime);
-	void	LowThickVault(float DeltaTime);
-	FVector CheckWallHeight();
-	bool	CheckWallThickness();
+	bool	CanVault();
+	bool	CanVaultToHit(FHitResult& HitResult);
+	void	CheckCapsuleCollision(FVector Center, float HalfHeight, float Radius);
+	void	VaultTick(float DeltaTime);
+	bool	CheckWalkable(float NoramlZ, float WalkableFloorZ)
+	{
+		if (NoramlZ > WalkableFloorZ) return true;
+		return false;
+	}
 	bool	CheckMinMax(float Min, float Max, float Value)
 	{
 		if (Value <= Max && Value >= Min) return true;
 		return false;
 	}
-	bool	LowThinVaulting = false;
-	bool	LowThickVaulting = false;
 
-protected:
+public:
 	void SetControlMode(ControlMode ControlMode);
+	void SetEndingLocation(FVector EndingPos) { EndingLocation = EndingPos; }
+	void SetHighVaultEnd();
 
 private:
 	ControlMode CurrentControlMode = ControlMode::GTA;
@@ -105,8 +98,10 @@ private:
 
 	bool		IsRunning = false;
 
-	float		LowThinVaultSpeed = 100.f;
-	float		LowThickVaultSpeed = 70.f;
-
-	FVector		LowThickVaultDestPos = FVector::ZeroVector;
+	bool		IsVaulting = false;
+	float		Progress = 0.f;
+	float		VaultSpeed = 100.f;
+	float		MinHighVault = 100;
+	float		MaxHighVault = 170;
+	FVector		EndingLocation = FVector::ZeroVector;
 };

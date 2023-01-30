@@ -23,19 +23,12 @@ void UABMyCharacterAnim::NativeBeginPlay()
 			IsRunning = value;
 		}
 	);
-	MyCharacater->LowThinVaultEvent.BindLambda
-	(
-		[this](bool value) -> void
-		{
-			CanLowThinVault = value;
-		}
-	);
 
-	MyCharacater->LowThickVaultEvent.BindLambda
+	MyCharacater->VaultHighEvent.BindLambda
 	(
 		[this](bool value) -> void
 		{
-			CanLowThickVault = value;
+			IsVaultingHigh = value;
 		}
 	);
 }
@@ -57,28 +50,37 @@ void UABMyCharacterAnim::NativeUpdateAnimation(float DeltaSeconds)
 	}
 }
 
-void UABMyCharacterAnim::AnimNotify_EndLowThinVault()
+void UABMyCharacterAnim::AnimNotify_EndHighVault()
 {
-	ABLOG_S(Warning);
-	CanLowThinVault = false;
 	auto Pawn = TryGetPawnOwner();
 	auto Character = Cast<AABMyCharacter>(Pawn);
-	Character->CapsuleComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	Character->CharacterMovementComp->SetMovementMode(EMovementMode::MOVE_Walking);
-	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-	Character->EnableInput(PlayerController);
-	Character->LowThinVaulting = false;
+	Character->SetHighVaultEnd();
+	IsVaultingHigh = false;
 }
 
-void UABMyCharacterAnim::AnimNotify_EndLowThickVault()
-{
-	ABLOG_S(Warning);
-	CanLowThickVault = false;
-	auto Pawn = TryGetPawnOwner();
-	auto Character = Cast<AABMyCharacter>(Pawn);
-	Character->CapsuleComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	Character->CharacterMovementComp->SetMovementMode(EMovementMode::MOVE_Walking);
-	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-	Character->EnableInput(PlayerController);
-	Character->LowThickVaulting = false;
-}
+
+//void UABMyCharacterAnim::AnimNotify_EndLowThinVault()
+//{
+//	ABLOG_S(Warning);
+//	CanLowThinVault = false;
+//	auto Pawn = TryGetPawnOwner();
+//	auto Character = Cast<AABMyCharacter>(Pawn);
+//	Character->CapsuleComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+//	Character->CharacterMovementComp->SetMovementMode(EMovementMode::MOVE_Walking);
+//	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+//	Character->EnableInput(PlayerController);
+//	Character->LowThinVaulting = false;
+//}
+//
+//void UABMyCharacterAnim::AnimNotify_EndLowThickVault()
+//{
+//	ABLOG_S(Warning);
+//	CanLowThickVault = false;
+//	auto Pawn = TryGetPawnOwner();
+//	auto Character = Cast<AABMyCharacter>(Pawn);
+//	Character->CapsuleComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+//	Character->CharacterMovementComp->SetMovementMode(EMovementMode::MOVE_Walking);
+//	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+//	Character->EnableInput(PlayerController);
+//	Character->LowThickVaulting = false;
+//}
