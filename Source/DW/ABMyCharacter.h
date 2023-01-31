@@ -7,7 +7,7 @@
 #include "ABMyCharacter.generated.h"
 
 DECLARE_DELEGATE_OneParam(FOnRun, bool);
-DECLARE_DELEGATE_OneParam(FOnVaultHigh, bool);
+DECLARE_DELEGATE_OneParam(FOnVaultEvent, int32);
 
 UCLASS()
 class DW_API AABMyCharacter : public ACharacter
@@ -21,12 +21,20 @@ public:
 		DAIBLO,
 	};
 
+	enum class VaultMode
+	{
+		CantVault,
+		HighVaulting,
+		LowThinVaulting,
+		LowThickVaulting,
+	};
+
 public:
 	AABMyCharacter();
 
 public:
 	FOnRun				RunEvent;
-	FOnVaultHigh		VaultHighEvent;
+	FOnVaultEvent		VaultEvent;
 
 protected:
 	virtual void BeginPlay() override;
@@ -54,7 +62,6 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = Character, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	class UABMyCharacterAnim* MyAnim;
 
-	
 public:
 	void ViewChange();
 	void Jump();
@@ -67,11 +74,12 @@ public:
 	void Turn(float NewAxisValue);
 
 public:
-	bool	CanVault();
-	bool	CanVaultToHit(FHitResult& HitResult);
-	void	CheckCapsuleCollision(FVector Center, float HalfHeight, float Radius);
-	void	VaultTick(float DeltaTime);
-	bool	CheckWalkable(float NoramlZ, float WalkableFloorZ)
+	VaultMode	CanVault();
+	VaultMode	CanVaultToHit(FHitResult& HitResult);
+	void		CheckCapsuleCollision(FVector Center, float HalfHeight, float Radius);
+	VaultMode	CheckThinOrThick();
+	float		VaultTick(float DeltaTime);
+	bool		CheckWalkable(float NoramlZ, float WalkableFloorZ)
 	{
 		if (NoramlZ > WalkableFloorZ) return true;
 		return false;
@@ -85,7 +93,7 @@ public:
 public:
 	void SetControlMode(ControlMode ControlMode);
 	void SetEndingLocation(FVector EndingPos) { EndingLocation = EndingPos; }
-	void SetHighVaultEnd();
+	void SetVaultEnd();
 
 private:
 	ControlMode CurrentControlMode = ControlMode::GTA;
@@ -98,10 +106,18 @@ private:
 
 	bool		IsRunning = false;
 
-	bool		IsVaulting = false;
+	VaultMode	VaultState = VaultMode::CantVault;
 	float		Progress = 0.f;
-	float		VaultSpeed = 100.f;
+	float		VaultSpeed = 1.f;
 	float		MinHighVault = 100;
 	float		MaxHighVault = 170;
+	float		MinLowVault = 40;
+	float		MaxLowVault = 90;
+
+	float		LowVaultRange = 130.f;
+	float		MinLowDepth = 30;
+	float		MaxLowDepth = 90;
+	float		ForLowVaultCheck = 30.f;
+	FVector		StartingLocation = FVector::ZeroVector;
 	FVector		EndingLocation = FVector::ZeroVector;
 };

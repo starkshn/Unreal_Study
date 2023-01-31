@@ -24,11 +24,12 @@ void UABMyCharacterAnim::NativeBeginPlay()
 		}
 	);
 
-	MyCharacater->VaultHighEvent.BindLambda
+	MyCharacater->VaultEvent.BindLambda
 	(
-		[this](bool value) -> void
+		[this](int value) -> void
 		{
-			IsVaultingHigh = value;
+			ABLOG(Warning, TEXT("VaultMode : %d"), value);
+			VaultState = value;
 		}
 	);
 }
@@ -52,10 +53,10 @@ void UABMyCharacterAnim::NativeUpdateAnimation(float DeltaSeconds)
 
 void UABMyCharacterAnim::AnimNotify_EndHighVault()
 {
-	auto Pawn = TryGetPawnOwner();
+	ABLOG_S(Warning);
+	/*auto Pawn = TryGetPawnOwner();
 	auto Character = Cast<AABMyCharacter>(Pawn);
-	Character->SetHighVaultEnd();
-	IsVaultingHigh = false;
+	Character->SetHighVaultEnd();*/
 }
 
 

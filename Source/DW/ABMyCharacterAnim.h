@@ -38,8 +38,7 @@ private:
 	bool IsRunning;
 
 	UPROPERTY(EditAnywhere, BlueprintreadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
-	bool IsVaultingHigh;
-
+	int32 VaultState;
 
 private:
 	class AABMyCharacter* MyCharacater;
