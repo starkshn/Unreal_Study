@@ -32,6 +32,15 @@ void UABMyCharacterAnim::NativeBeginPlay()
 			VaultState = value;
 		}
 	);
+
+	MyCharacater->SlidingEvent.BindLambda
+	(
+		[this](bool value) -> void
+		{
+			ABLOG(Warning, TEXT("IsSliding : %d"), value);
+			IsSliding = value;
+		}
+	);
 }
 
 void UABMyCharacterAnim::NativeUpdateAnimation(float DeltaSeconds)

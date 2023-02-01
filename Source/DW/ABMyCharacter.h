@@ -8,6 +8,7 @@
 
 DECLARE_DELEGATE_OneParam(FOnRun, bool);
 DECLARE_DELEGATE_OneParam(FOnVaultEvent, int32);
+DECLARE_DELEGATE_OneParam(FOnSlidingEvent, bool);
 
 UCLASS()
 class DW_API AABMyCharacter : public ACharacter
@@ -35,6 +36,7 @@ public:
 public:
 	FOnRun				RunEvent;
 	FOnVaultEvent		VaultEvent;
+	FOnSlidingEvent		SlidingEvent;
 
 protected:
 	virtual void BeginPlay() override;
@@ -65,6 +67,7 @@ public:
 public:
 	void ViewChange();
 	void Jump();
+	void Sliding();
 	void PressedRun();
 	void ReleasedRun();
 
@@ -78,7 +81,6 @@ public:
 	VaultMode	CanVaultToHit(FHitResult& HitResult);
 	void		CheckCapsuleCollision(FVector Center, float HalfHeight, float Radius);
 	VaultMode	CheckThinOrThick();
-	float		VaultTick(float DeltaTime);
 	bool		CheckWalkable(float NoramlZ, float WalkableFloorZ)
 	{
 		if (NoramlZ > WalkableFloorZ) return true;
@@ -90,10 +92,14 @@ public:
 		return false;
 	}
 
+	float		VaultTick(float DeltaTime);
+	float		SlidingTick(float DeltaTime);
+
 public:
 	void SetControlMode(ControlMode ControlMode);
 	void SetEndingLocation(FVector EndingPos) { EndingLocation = EndingPos; }
 	void SetVaultEnd();
+	void SetSlidingEnd();
 
 private:
 	ControlMode CurrentControlMode = ControlMode::GTA;
@@ -105,6 +111,7 @@ private:
 	float		ArmRotationSpeed = 0.0f;
 
 	bool		IsRunning = false;
+	bool		IsSliding = false;
 
 	VaultMode	VaultState = VaultMode::CantVault;
 	float		Progress = 0.f;
@@ -120,4 +127,6 @@ private:
 	float		ForLowVaultCheck = 30.f;
 	FVector		StartingLocation = FVector::ZeroVector;
 	FVector		EndingLocation = FVector::ZeroVector;
+
+	float		SlidingSpeed = 2.f;
 };

@@ -24,6 +24,7 @@ public:
 public:
 	UFUNCTION()
 	void AnimNotify_EndHighVault();
+
 //	UFUNCTION()
 //	void AnimNotify_EndLowThickVault();
 
@@ -36,6 +37,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintreadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
 	bool IsRunning;
+
+	UPROPERTY(EditAnywhere, BlueprintreadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
+	bool IsSliding;
 
 	UPROPERTY(EditAnywhere, BlueprintreadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
 	int32 VaultState;
