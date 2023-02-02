@@ -124,6 +124,7 @@ void AABMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction(TEXT("Jump"), EInputEvent::IE_Pressed, this, &AABMyCharacter::Jump); PlayerInputComponent->BindAction(TEXT("Run"), EInputEvent::IE_Pressed, this, &AABMyCharacter::PressedRun);
 	PlayerInputComponent->BindAction(TEXT("Run"), EInputEvent::IE_Released, this, &AABMyCharacter::ReleasedRun);
 	PlayerInputComponent->BindAction(TEXT("Sliding"), EInputEvent::IE_Pressed, this, &AABMyCharacter::Sliding);
+	PlayerInputComponent->BindAction(TEXT("Rifle"), EInputEvent::IE_Pressed, this, &AABMyCharacter::Rifle);
 }
 
 void AABMyCharacter::ViewChange()
@@ -213,6 +214,11 @@ void AABMyCharacter::ReleasedRun()
 {
 	RunEvent.ExecuteIfBound(false);
 	IsRunning = false;
+}
+
+void AABMyCharacter::Rifle()
+{
+	RifleEvent.ExecuteIfBound((++IsRifle) % 2);
 }
 
 void AABMyCharacter::UpDown(float NewAxisValue)

@@ -9,6 +9,7 @@
 DECLARE_DELEGATE_OneParam(FOnRun, bool);
 DECLARE_DELEGATE_OneParam(FOnVaultEvent, int32);
 DECLARE_DELEGATE_OneParam(FOnSlidingEvent, bool);
+DECLARE_DELEGATE_OneParam(FOnSetRifleEvent, int32);
 
 UCLASS()
 class DW_API AABMyCharacter : public ACharacter
@@ -37,6 +38,7 @@ public:
 	FOnRun				RunEvent;
 	FOnVaultEvent		VaultEvent;
 	FOnSlidingEvent		SlidingEvent;
+	FOnSetRifleEvent	RifleEvent;
 
 protected:
 	virtual void BeginPlay() override;
@@ -70,6 +72,7 @@ public:
 	void Sliding();
 	void PressedRun();
 	void ReleasedRun();
+	void Rifle();
 
 	void UpDown(float NewAxisValue);
 	void LeftRight(float NewAxisValue);
@@ -129,4 +132,6 @@ private:
 	FVector		EndingLocation = FVector::ZeroVector;
 
 	float		SlidingSpeed = 2.f;
+	
+	int32		IsRifle = 0;
 };

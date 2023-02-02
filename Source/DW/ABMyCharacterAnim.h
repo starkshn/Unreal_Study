@@ -44,6 +44,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintreadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
 	int32 VaultState;
 
+	UPROPERTY(EditAnywhere, BlueprintreadOnly, Category = Pawn, Meta = (AllowPrivateAccess = true))
+	int32 IsRifle;
+
 private:
 	class AABMyCharacter* MyCharacater;
 };

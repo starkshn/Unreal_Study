@@ -41,6 +41,15 @@ void UABMyCharacterAnim::NativeBeginPlay()
 			IsSliding = value;
 		}
 	);
+
+	MyCharacater->RifleEvent.BindLambda
+	(
+		[this](int32 value) -> void
+		{
+			ABLOG(Warning, TEXT("IsRifle : %d"), value);
+			IsRifle = value;
+		}
+	);
 }
 
 void UABMyCharacterAnim::NativeUpdateAnimation(float DeltaSeconds)
