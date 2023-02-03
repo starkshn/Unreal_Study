@@ -66,6 +66,9 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = Character, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
 	class UABMyCharacterAnim* MyAnim;
 
+	UPROPERTY(VisibleAnywhere, Category = Character, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	int32		IsRifle = 0;
+
 public:
 	void ViewChange();
 	void Jump();
@@ -133,5 +136,5 @@ private:
 
 	float		SlidingSpeed = 2.f;
 	
-	int32		IsRifle = 0;
+	// int32		IsRifle = 0;
 };

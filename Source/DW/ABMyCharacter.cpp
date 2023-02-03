@@ -11,7 +11,7 @@
 AABMyCharacter::AABMyCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
+	ABLOG_S(Warning);
 	RootComponent = GetCapsuleComponent();
 	CapsuleComp = GetCapsuleComponent();
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SPRINGARM"));
@@ -25,13 +25,13 @@ AABMyCharacter::AABMyCharacter()
 	SpringArm->TargetArmLength = 400.f;
 	SpringArm->SetRelativeRotation(FRotator(-15.f, 0.f, 0.f));
 
-	static ConstructorHelpers::FObjectFinder<USkeletalMesh> MY_Mesh(TEXT("SkeletalMesh'/Game/Character/MyCharacter.MyCharacter'"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> MY_Mesh(TEXT("SkeletalMesh'/Game/DWFiles/Character/MyCharacter.MyCharacter'"));
 	if (MY_Mesh.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(MY_Mesh.Object);
 	}
 
-	static ConstructorHelpers::FClassFinder<UAnimInstance> MY_Anim(TEXT("AnimBlueprint'/Game/BlueprintClass/BP_MyCharacterAnim.BP_MyCharacterAnim_C'"));
+	static ConstructorHelpers::FClassFinder<UAnimInstance> MY_Anim(TEXT("AnimBlueprint'/Game/DWFiles/BlueprintClass/BP_MyCharacterAnim.BP_MyCharacterAnim_C'"));
 	if (MY_Anim.Succeeded())
 	{
 		GetMesh()->SetAnimInstanceClass(MY_Anim.Class);
