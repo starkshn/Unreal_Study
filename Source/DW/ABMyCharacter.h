@@ -10,6 +10,7 @@ DECLARE_DELEGATE_OneParam(FOnRun, bool);
 DECLARE_DELEGATE_OneParam(FOnVaultEvent, int32);
 DECLARE_DELEGATE_OneParam(FOnSlidingEvent, bool);
 DECLARE_DELEGATE_OneParam(FOnSetRifleEvent, int32);
+DECLARE_DELEGATE_OneParam(FOnSetAimingEvent, int32);
 
 UCLASS()
 class DW_API AABMyCharacter : public ACharacter
@@ -39,6 +40,7 @@ public:
 	FOnVaultEvent		VaultEvent;
 	FOnSlidingEvent		SlidingEvent;
 	FOnSetRifleEvent	RifleEvent;
+	FOnSetAimingEvent	AimingEvent;
 
 protected:
 	virtual void BeginPlay() override;
@@ -67,7 +69,20 @@ public:
 	class UABMyCharacterAnim* MyAnim;
 
 	UPROPERTY(VisibleAnywhere, Category = Character, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
-	int32		IsRifle = 0;
+	int32		IsRifle;
+
+	UPROPERTY(VisibleAnywhere, Category = Character, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	int32		IsAiming;
+
+	UPROPERTY(VisibleAnywhere, Category = Gun, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	int32		CurrentMag;
+
+	UPROPERTY(VisibleAnywhere, Category = Gun, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	int32		Ammo;
+
+
+	UPROPERTY(VisibleAnywhere, Category = Widget, BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	class UWidgetComponent* GunWidget;
 
 public:
 	void ViewChange();
@@ -76,6 +91,7 @@ public:
 	void PressedRun();
 	void ReleasedRun();
 	void Rifle();
+	void Aiming();
 
 	void UpDown(float NewAxisValue);
 	void LeftRight(float NewAxisValue);
@@ -107,6 +123,8 @@ public:
 	void SetVaultEnd();
 	void SetSlidingEnd();
 
+	
+
 private:
 	ControlMode CurrentControlMode = ControlMode::GTA;
 	FVector		DirectionToMove = FVector::ZeroVector;
@@ -135,6 +153,5 @@ private:
 	FVector		EndingLocation = FVector::ZeroVector;
 
 	float		SlidingSpeed = 2.f;
-	
-	// int32		IsRifle = 0;
+
 };

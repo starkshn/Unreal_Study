@@ -7,6 +7,8 @@
 #include "ABPlayerController.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "Blueprint/UserWidget.h"
+#include "Components/WidgetComponent.h"
 
 AABMyCharacter::AABMyCharacter()
 {
@@ -16,6 +18,7 @@ AABMyCharacter::AABMyCharacter()
 	CapsuleComp = GetCapsuleComponent();
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SPRINGARM"));
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CAMERA"));
+
 
 	SpringArm->SetupAttachment(GetCapsuleComponent());
 	Camera->SetupAttachment(SpringArm);
@@ -37,10 +40,27 @@ AABMyCharacter::AABMyCharacter()
 		GetMesh()->SetAnimInstanceClass(MY_Anim.Class);
 	}
 
+	GunWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("GUNWIDGET"));
+	GunWidget->SetupAttachment(GetMesh());
+	GunWidget->SetRelativeLocation(FVector(0.f, 0.f, 200.f));
+	GunWidget->SetWidgetSpace(EWidgetSpace::Screen);
+	static ConstructorHelpers::FClassFinder<UUserWidget> UW(TEXT("WidgetBlueprint'/Game/DWFiles/BlueprintClass/BP_AmmoWidget.BP_AmmoWidget_C'"));
+	if (UW.Succeeded())
+	{
+		GunWidget->SetWidgetClass(UW.Class);
+		GunWidget->SetDrawSize(FVector2D(200.f, 50.f));
+	}
+
 	SetControlMode(ControlMode::GTA);
 
 	ArmLengthSpeed = 3.f;
 	ArmRotationSpeed = 10.f;
+
+	IsRifle = 0;
+	IsAiming = 0;
+
+	CurrentMag = 30;
+	Ammo = 50;
 }
 
 void AABMyCharacter::BeginPlay()
@@ -48,6 +68,8 @@ void AABMyCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	ABLOG(Warning, TEXT("%f"), CapsuleComp->GetScaledCapsuleHalfHeight());
+
+
 }
 
 void AABMyCharacter::Tick(float DeltaTime)
@@ -125,6 +147,8 @@ void AABMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction(TEXT("Run"), EInputEvent::IE_Released, this, &AABMyCharacter::ReleasedRun);
 	PlayerInputComponent->BindAction(TEXT("Sliding"), EInputEvent::IE_Pressed, this, &AABMyCharacter::Sliding);
 	PlayerInputComponent->BindAction(TEXT("Rifle"), EInputEvent::IE_Pressed, this, &AABMyCharacter::Rifle);
+	PlayerInputComponent->BindAction(TEXT("Aiming"), EInputEvent::IE_Pressed, this, &AABMyCharacter::Aiming);
+	PlayerInputComponent->BindAction(TEXT("Aiming"), EInputEvent::IE_Released, this, &AABMyCharacter::Aiming);
 }
 
 void AABMyCharacter::ViewChange()
@@ -204,8 +228,10 @@ void AABMyCharacter::Sliding()
 	}
 }
 
+
 void AABMyCharacter::PressedRun()
 {
+	if (IsAiming) return;
 	RunEvent.ExecuteIfBound(true);
 	IsRunning = true;
 }
@@ -219,6 +245,14 @@ void AABMyCharacter::ReleasedRun()
 void AABMyCharacter::Rifle()
 {
 	RifleEvent.ExecuteIfBound((++IsRifle) % 2);
+}
+
+
+void AABMyCharacter::Aiming()
+{
+	IsAiming = (IsAiming + 1) % 2;
+	ABLOG(Warning, TEXT("%d"), int(IsAiming));
+	AimingEvent.ExecuteIfBound(IsAiming);
 }
 
 void AABMyCharacter::UpDown(float NewAxisValue)

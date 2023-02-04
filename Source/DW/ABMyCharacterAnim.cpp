@@ -50,6 +50,15 @@ void UABMyCharacterAnim::NativeBeginPlay()
 			IsRifle = value;
 		}
 	);
+
+	MyCharacater->AimingEvent.BindLambda
+	(
+		[this](int32 value) -> void
+		{
+			ABLOG(Warning, TEXT("IsAiming : %d"), value);
+			IsAiming = value;
+		}
+	);
 }
 
 void UABMyCharacterAnim::NativeUpdateAnimation(float DeltaSeconds)
